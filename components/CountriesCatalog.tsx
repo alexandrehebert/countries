@@ -74,8 +74,8 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
   return (
     <>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="relative block w-full sm:max-w-md">
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+          <label className="relative block w-full min-w-0 sm:max-w-md">
             <span className="sr-only">{copy.searchPlaceholder}</span>
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -90,7 +90,7 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
           <select
             value={region}
             onChange={(event) => setRegion(event.target.value)}
-            className="rounded-xl border border-white/12 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-emerald-300/50"
+            className="w-full rounded-xl border border-white/12 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-emerald-300/50 sm:w-auto"
           >
             <option value="all">{copy.allRegions}</option>
             {regions.map((regionOption) => (
@@ -111,16 +111,16 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
           {copy.emptyState}
         </div>
       ) : (
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {filteredCountries.map((country) => (
             <Link
               key={country.code}
               href={`/${locale}/country/${country.code.toLowerCase()}`}
               scroll={false}
               aria-label={copy.detailsCta ? `${copy.detailsCta}: ${country.name}` : country.name}
-              className="group block rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
+              className="group block min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
             >
-              <article className="flex h-full flex-col">
+              <article className="flex h-full min-w-0 flex-col">
                 <div className="flex items-start gap-3">
                   <CountryFlag
                     country={country.name}
@@ -155,32 +155,32 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
                       </span>
                     </div>
 
-                    <p className="mt-2 text-xs leading-5 text-slate-400">{country.officialName}</p>
+                    <p className="mt-2 break-words text-xs leading-5 text-slate-400">{country.officialName}</p>
                   </div>
                 </div>
 
                 <dl className="mt-4 grid gap-2 text-sm">
                   <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
                     <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                    <div>
+                    <div className="min-w-0">
                       <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.capitalLabel}</dt>
-                      <dd className="text-slate-100">{country.capital}</dd>
+                      <dd className="break-words text-slate-100">{country.capital}</dd>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
                     <MapPinned className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
-                    <div>
+                    <div className="min-w-0">
                       <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.regionLabel}</dt>
-                      <dd className="text-slate-100">{country.region}{country.subregion ? ` · ${country.subregion}` : ''}</dd>
+                      <dd className="break-words text-slate-100">{country.region}{country.subregion ? ` · ${country.subregion}` : ''}</dd>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
                     <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                    <div>
+                    <div className="min-w-0">
                       <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.populationLabel}</dt>
-                      <dd className="text-slate-100">{numberFormat.format(country.population)}</dd>
+                      <dd className="break-words text-slate-100">{numberFormat.format(country.population)}</dd>
                     </div>
                   </div>
                 </dl>
@@ -190,7 +190,7 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
                     <Languages className="h-3.5 w-3.5" />
                     {copy.languagesLabel}
                   </p>
-                  <p className="mt-1 text-sm text-slate-100">
+                  <p className="mt-1 break-words text-sm text-slate-100">
                     {country.languages.length > 0 ? country.languages.join(', ') : '—'}
                   </p>
                 </div>
