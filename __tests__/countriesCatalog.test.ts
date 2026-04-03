@@ -31,6 +31,15 @@ describe('getCountriesCatalog', () => {
     expect(byCode.get('JP')?.population).toBeGreaterThan(0);
   });
 
+  it('derives continent values when the source dataset does not expose them', async () => {
+    const countries = await getCountriesCatalog('en');
+    const byCode = new Map(countries.map((country) => [country.code, country]));
+
+    expect(byCode.get('US')?.continents).toEqual(['North America']);
+    expect(byCode.get('BR')?.continents).toEqual(['South America']);
+    expect(byCode.get('FR')?.continents).toEqual(['Europe']);
+  });
+
   it('uses a focused mainland silhouette for France', async () => {
     const countries = await getCountriesCatalog('en');
     const france = countries.find((country) => country.code === 'FR');

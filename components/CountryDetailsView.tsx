@@ -13,6 +13,7 @@ interface CountryDetailsViewProps {
     officialLabel: string;
     capitalLabel: string;
     regionLabel: string;
+    subregionLabel?: string;
     populationLabel: string;
     languagesLabel: string;
     currenciesLabel: string;
@@ -72,6 +73,15 @@ export default function CountryDetailsView({
   copy,
 }: CountryDetailsViewProps) {
   const numberFormat = new Intl.NumberFormat(locale);
+  const continents = Array.from(new Set(country.continents.map((continent) => continent.trim()).filter(Boolean)));
+  const continentsValue = continents.join(', ') || '—';
+  const hasDuplicateRegionAndContinent = continents.length === 1 && continents[0] === country.region;
+  const geographyLabel = hasDuplicateRegionAndContinent && country.subregion
+    ? (copy.subregionLabel || copy.regionLabel)
+    : copy.regionLabel;
+  const geographyValue = hasDuplicateRegionAndContinent && country.subregion
+    ? country.subregion
+    : (country.region || '—');
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-7">
@@ -126,13 +136,13 @@ export default function CountryDetailsView({
             />
             <InfoTile
               icon={<MapPinned className="h-3.5 w-3.5 text-cyan-300" />}
-              label={copy.regionLabel}
-              value={country.region}
+              label={geographyLabel}
+              value={geographyValue}
             />
             <InfoTile
               icon={<MapPinned className="h-3.5 w-3.5 text-sky-300" />}
               label={copy.continentsLabel}
-              value={country.continents.join(', ') || '—'}
+              value={continentsValue}
             />
           </div>
         </section>

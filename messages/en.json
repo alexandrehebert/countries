@@ -12,6 +12,7 @@
     "official_label": "Official name",
     "capital_label": "Capital",
     "region_label": "Region",
+    "subregion_label": "Subregion",
     "population_label": "Population",
     "languages_label": "Languages",
     "currencies_label": "Currencies",

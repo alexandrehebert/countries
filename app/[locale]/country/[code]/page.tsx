@@ -61,6 +61,7 @@ export default async function CountryDetailsPage({ params }: CountryDetailsPageP
               officialLabel: t('official_label'),
               capitalLabel: t('capital_label'),
               regionLabel: t('region_label'),
+              subregionLabel: t('subregion_label'),
               populationLabel: t('population_label'),
               languagesLabel: t('languages_label'),
               currenciesLabel: t('currencies_label'),

@@ -264,16 +264,60 @@ function resolveFeature(country: Country, lookup: ReturnType<typeof buildFeature
   return null;
 }
 
+function uniqueStrings(values: Array<string | undefined | null>): string[] {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => (typeof value === 'string' ? value.trim() : ''))
+        .filter(Boolean),
+    ),
+  );
+}
+
 function getCurrencies(country: Country): string[] {
-  return Object.values(country.currencies || {})
-    .map((currency) => currency?.name || '')
-    .filter(Boolean);
+  return uniqueStrings(Object.values(country.currencies || {}).map((currency) => currency?.name || ''));
 }
 
 function getLanguages(country: Country): string[] {
-  return Object.values(country.languages || {})
-    .map((language) => String(language))
-    .filter(Boolean);
+  return uniqueStrings(Object.values(country.languages || {}).map((language) => String(language)));
+}
+
+function getContinents(country: Country): string[] {
+  const countryWithMetadata = country as Country & {
+    continents?: string[];
+  };
+  const explicitContinents = Array.isArray(countryWithMetadata.continents)
+    ? uniqueStrings(countryWithMetadata.continents)
+    : [];
+
+  if (explicitContinents.length > 0) {
+    return explicitContinents;
+  }
+
+  const region = country.region?.trim();
+  const normalizedSubregion = country.subregion?.trim().toLowerCase();
+
+  if (region === 'Americas') {
+    if (normalizedSubregion?.includes('south')) {
+      return ['South America'];
+    }
+
+    if (
+      normalizedSubregion?.includes('north')
+      || normalizedSubregion?.includes('central')
+      || normalizedSubregion?.includes('caribbean')
+    ) {
+      return ['North America'];
+    }
+
+    return ['North America', 'South America'];
+  }
+
+  if (region === 'Antarctic') {
+    return ['Antarctica'];
+  }
+
+  return region ? [region] : [];
 }
 
 function getPopulation(country: Country): number {
@@ -301,10 +345,8 @@ function toCatalogCountry(
     return null;
   }
 
-  const countryWithMetadata = country as Country & {
-    continents?: string[];
-  };
   const population = getPopulation(country);
+  const continents = getContinents(country);
   const matchedFeature = resolveFeature(country, lookup);
   let path: string | null = null;
   let focusBounds: CatalogCountry['focusBounds'] = null;
@@ -338,9 +380,7 @@ function toCatalogCountry(
     capital: country.capital?.[0] || '—',
     region: country.region || 'Other',
     subregion: country.subregion || '',
-    continents: Array.isArray(countryWithMetadata.continents)
-      ? countryWithMetadata.continents
-      : [country.region].filter(Boolean),
+    continents,
     population,
     languages: getLanguages(country),
     currencies: getCurrencies(country),
