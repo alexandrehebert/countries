@@ -1,0 +1,31 @@
+{
+  "catalog": {
+    "meta_title": "Countries Atlas",
+    "meta_description": "A standalone exhaustive catalog of world countries and flags, extracted from Atlas Guesser.",
+    "eyebrow": "Countries",
+    "title": "Every country and flag, in one searchable catalog",
+    "description": "This project lifts the \"View all countries\" experience out of the guesser game and turns it into its own app, while keeping the same Next.js + React + Tailwind + TypeScript stack.",
+    "catalog_intro": "Exhaustive list powered by the world-countries dataset and country flag assets.",
+    "search_placeholder": "Search by country, code, capital or region",
+    "all_regions": "All regions",
+    "countries_shown": "{count} countries shown",
+    "official_label": "Official name",
+    "capital_label": "Capital",
+    "region_label": "Region",
+    "population_label": "Population",
+    "languages_label": "Languages",
+    "empty_state": "No countries match the current filters.",
+    "stats_total_label": "Catalog entries",
+    "stats_total_helper": "ISO countries and territories",
+    "stats_regions_label": "World regions",
+    "stats_regions_helper": "Africa, Americas, Antarctica, Asia, Europe and Oceania",
+    "stats_capitals_label": "Capitals listed",
+    "stats_capitals_helper": "Entries with a known capital",
+    "sources_title": "Sources",
+    "sources_intro": "Data and visual assets used on this page:",
+    "sources_world_countries": "Country names, codes, regions, capitals and language metadata.",
+    "sources_flags": "SVG flag assets used for country flag rendering.",
+    "sources_map": "Country silhouettes and world geometry used for the mini map shapes.",
+    "sources_population": "Population figures used in the catalog's population field."
+  }
+}

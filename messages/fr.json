@@ -1,0 +1,31 @@
+{
+  "catalog": {
+    "meta_title": "Atlas des pays",
+    "meta_description": "Un catalogue autonome et exhaustif des pays du monde et de leurs drapeaux, extrait d'Atlas Guesser.",
+    "eyebrow": "Pays",
+    "title": "Tous les pays et leurs drapeaux dans un catalogue consultable",
+    "description": "Ce projet reprend l'expérience \"Voir tous les pays\" du jeu guesser et la transforme en application dédiée, tout en gardant la même stack Next.js + React + Tailwind + TypeScript.",
+    "catalog_intro": "Liste exhaustive alimentée par le dataset world-countries et les assets de drapeaux.",
+    "search_placeholder": "Rechercher par pays, code, capitale ou région",
+    "all_regions": "Toutes les régions",
+    "countries_shown": "{count} pays affichés",
+    "official_label": "Nom officiel",
+    "capital_label": "Capitale",
+    "region_label": "Région",
+    "population_label": "Population",
+    "languages_label": "Langues",
+    "empty_state": "Aucun pays ne correspond aux filtres actuels.",
+    "stats_total_label": "Entrées du catalogue",
+    "stats_total_helper": "Pays et territoires ISO",
+    "stats_regions_label": "Régions du monde",
+    "stats_regions_helper": "Afrique, Amériques, Antarctique, Asie, Europe et Océanie",
+    "stats_capitals_label": "Capitales listées",
+    "stats_capitals_helper": "Entrées avec capitale connue",
+    "sources_title": "Sources",
+    "sources_intro": "Données et ressources visuelles utilisées sur cette page :",
+    "sources_world_countries": "Noms des pays, codes, régions, capitales et métadonnées de langues.",
+    "sources_flags": "Ressources SVG utilisées pour l'affichage des drapeaux.",
+    "sources_map": "Silhouettes des pays et géométrie mondiale utilisées pour les mini-cartes.",
+    "sources_population": "Chiffres de population utilisés dans le champ population du catalogue."
+  }
+}

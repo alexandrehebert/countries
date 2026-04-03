@@ -1,0 +1,17 @@
+services:
+  countries:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: countries-app
+    ports:
+      - "4103:4103"
+    environment:
+      NODE_ENV: development
+      PORT: 4103
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
