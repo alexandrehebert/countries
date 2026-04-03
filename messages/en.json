@@ -4,7 +4,7 @@
     "meta_description": "A standalone exhaustive catalog of world countries and flags, extracted from Atlas Guesser.",
     "eyebrow": "Countries",
     "title": "Every country and flag, in one searchable catalog",
-    "description": "This project lifts the \"View all countries\" experience out of the guesser game and turns it into its own app, while keeping the same Next.js + React + Tailwind + TypeScript stack.",
+    "description": "Discover every country in one beautifully simple, searchable place — explore flags, capitals, regions, and key facts from around the world with ease.",
     "catalog_intro": "Exhaustive list powered by the world-countries dataset and country flag assets.",
     "search_placeholder": "Search by country, code, capital or region",
     "all_regions": "All regions",

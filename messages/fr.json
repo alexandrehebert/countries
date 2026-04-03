@@ -4,7 +4,7 @@
     "meta_description": "Un catalogue autonome et exhaustif des pays du monde et de leurs drapeaux, extrait d'Atlas Guesser.",
     "eyebrow": "Pays",
     "title": "Tous les pays et leurs drapeaux dans un catalogue consultable",
-    "description": "Ce projet reprend l'expérience \"Voir tous les pays\" du jeu guesser et la transforme en application dédiée, tout en gardant la même stack Next.js + React + Tailwind + TypeScript.",
+    "description": "Découvrez tous les pays dans un espace clair et agréable à parcourir — explorez drapeaux, capitales, régions et informations essentielles du monde entier en toute simplicité.",
     "catalog_intro": "Liste exhaustive alimentée par le dataset world-countries et les assets de drapeaux.",
     "search_placeholder": "Rechercher par pays, code, capitale ou région",
     "all_regions": "Toutes les régions",
