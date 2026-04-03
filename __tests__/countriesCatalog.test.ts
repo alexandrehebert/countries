@@ -30,4 +30,14 @@ describe('getCountriesCatalog', () => {
     expect(byCode.get('US')?.population).toBeGreaterThan(0);
     expect(byCode.get('JP')?.population).toBeGreaterThan(0);
   });
+
+  it('uses a focused mainland silhouette for France', async () => {
+    const countries = await getCountriesCatalog('en');
+    const france = countries.find((country) => country.code === 'FR');
+
+    expect(france?.path).toBeTruthy();
+    expect(france?.focusBounds).toBeTruthy();
+    expect(france?.path?.match(/M/g)).toHaveLength(1);
+    expect(france?.focusBounds?.width).toBeGreaterThan(20);
+  });
 });

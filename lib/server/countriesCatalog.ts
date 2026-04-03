@@ -9,6 +9,7 @@ const MIN_SHAPE_SIZE = 4;
 
 type GeoFeature = GeoJSON.Feature<GeoJSON.Geometry>;
 type FeatureProperties = Record<string, unknown>;
+type FeatureLookupCandidate = { value: string; priority: number };
 
 export interface CatalogCountry {
   code: string;
@@ -67,19 +68,34 @@ function getCountryNameCandidates(country: Country): string[] {
   ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
 }
 
-function getFeatureNameCandidates(properties: FeatureProperties): string[] {
+function getFeatureCodeCandidates(properties: FeatureProperties): string[] {
   return [
     properties.ISO_A2,
-    properties.ISO_A3,
-    properties.NAME,
-    properties.NAME_EN,
-    properties.NAME_FR,
-    properties.ADMIN,
-    properties.SOVEREIGNT,
-    properties.BRK_NAME,
-    properties.FORMAL_EN,
-    properties.FORMAL_FR,
-  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+    properties.ISO_A2_EH,
+    properties.WB_A2,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.toUpperCase());
+}
+
+function getFeatureNameCandidates(properties: FeatureProperties): FeatureLookupCandidate[] {
+  return [
+    { value: String(properties.ISO_A2 || ''), priority: 95 },
+    { value: String(properties.ISO_A2_EH || ''), priority: 95 },
+    { value: String(properties.WB_A2 || ''), priority: 95 },
+    { value: String(properties.ISO_A3 || ''), priority: 90 },
+    { value: String(properties.ISO_A3_EH || ''), priority: 90 },
+    { value: String(properties.WB_A3 || ''), priority: 90 },
+    { value: String(properties.ADM0_A3 || ''), priority: 90 },
+    { value: String(properties.NAME || ''), priority: 100 },
+    { value: String(properties.NAME_EN || ''), priority: 100 },
+    { value: String(properties.NAME_FR || ''), priority: 100 },
+    { value: String(properties.ADMIN || ''), priority: 100 },
+    { value: String(properties.BRK_NAME || ''), priority: 92 },
+    { value: String(properties.FORMAL_EN || ''), priority: 82 },
+    { value: String(properties.FORMAL_FR || ''), priority: 82 },
+    { value: String(properties.SOVEREIGNT || ''), priority: 40 },
+  ].filter((candidate) => candidate.value.trim().length > 0);
 }
 
 function normalizeAntimeridianGeometry(
@@ -204,24 +220,32 @@ async function loadGeoJson(): Promise<GeoJSON.FeatureCollection> {
 
 function buildFeatureLookup(features: GeoFeature[]) {
   const byCode = new Map<string, GeoFeature>();
-  const byName = new Map<string, GeoFeature>();
+  const byName = new Map<string, { feature: GeoFeature; priority: number }>();
 
   for (const feature of features) {
     const properties = (feature.properties || {}) as FeatureProperties;
-    const code = typeof properties.ISO_A2 === 'string' ? properties.ISO_A2.toUpperCase() : '';
 
-    if (/^[A-Z]{2}$/.test(code) && !byCode.has(code)) {
-      byCode.set(code, feature);
+    for (const code of getFeatureCodeCandidates(properties)) {
+      if (/^[A-Z]{2}$/.test(code) && !byCode.has(code)) {
+        byCode.set(code, feature);
+      }
     }
 
     for (const candidate of getFeatureNameCandidates(properties)) {
-      const normalized = normalizeText(candidate);
-      if (!normalized || byName.has(normalized)) continue;
-      byName.set(normalized, feature);
+      const normalized = normalizeText(candidate.value);
+      if (!normalized) continue;
+
+      const existing = byName.get(normalized);
+      if (!existing || candidate.priority > existing.priority) {
+        byName.set(normalized, { feature, priority: candidate.priority });
+      }
     }
   }
 
-  return { byCode, byName };
+  return {
+    byCode,
+    byName: new Map(Array.from(byName.entries(), ([key, value]) => [key, value.feature])),
+  };
 }
 
 function resolveFeature(country: Country, lookup: ReturnType<typeof buildFeatureLookup>): GeoFeature | null {
@@ -287,11 +311,11 @@ function toCatalogCountry(
 
   if (matchedFeature) {
     const rawFeature = normalizeAntimeridianGeometry(matchedFeature, generator);
-    const focusFeature = getFeatureFocusGeometry(rawFeature, generator);
-    path = generator(rawFeature);
+    const renderFeature = getFeatureFocusGeometry(rawFeature, generator);
+    path = generator(renderFeature);
 
     if (path) {
-      const bounds = generator.bounds(focusFeature);
+      const bounds = generator.bounds(renderFeature);
       const width = Math.max(0, bounds[1][0] - bounds[0][0]);
       const height = Math.max(0, bounds[1][1] - bounds[0][1]);
 
