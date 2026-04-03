@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Building2, Globe2, Languages, MapPinned, Search } from 'lucide-react';
 import CountryFlag from '~/components/CountryFlag';
@@ -18,6 +19,7 @@ interface CountriesCatalogProps {
     populationLabel: string;
     languagesLabel: string;
     emptyState: string;
+    detailsCta?: string;
   };
 }
 
@@ -111,84 +113,94 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
       ) : (
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {filteredCountries.map((country) => (
-            <article
+            <Link
               key={country.code}
-              className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
+              href={`/${locale}/country/${country.code.toLowerCase()}`}
+              scroll={false}
+              aria-label={copy.detailsCta ? `${copy.detailsCta}: ${country.name}` : country.name}
+              className="group block rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
             >
-              <div className="flex items-start gap-3">
-                <CountryFlag
-                  country={country.name}
-                  countryCode={country.code}
-                  fallbackEmoji={country.flagEmoji}
-                  size="lg"
-                  className="h-12 w-12 rounded-2xl ring-2 ring-white/12"
-                />
+              <article className="flex h-full flex-col">
+                <div className="flex items-start gap-3">
+                  <CountryFlag
+                    country={country.name}
+                    countryCode={country.code}
+                    fallbackEmoji={country.flagEmoji}
+                    size="lg"
+                    className="h-12 w-12 rounded-2xl ring-2 ring-white/12"
+                  />
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="truncate text-base font-semibold text-white">{country.name}</h3>
-                      <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-slate-400">
-                        {country.code} · {country.cca3}
-                      </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold text-white">{country.name}</h3>
+                        <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-slate-400">
+                          {country.code} · {country.cca3}
+                        </p>
+                      </div>
+
+                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-900/70 text-emerald-100/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                        {country.path && country.focusBounds ? (
+                          <svg
+                            aria-hidden="true"
+                            viewBox={`${country.focusBounds.x} ${country.focusBounds.y} ${Math.max(1, country.focusBounds.width)} ${Math.max(1, country.focusBounds.height)}`}
+                            className="h-[18px] w-[18px]"
+                            preserveAspectRatio="xMidYMid meet"
+                          >
+                            <path d={country.path} fill="currentColor" />
+                          </svg>
+                        ) : (
+                          <Globe2 className="h-4 w-4" />
+                        )}
+                      </span>
                     </div>
 
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-900/70 text-emerald-100/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                      {country.path && country.focusBounds ? (
-                        <svg
-                          aria-hidden="true"
-                          viewBox={`${country.focusBounds.x} ${country.focusBounds.y} ${Math.max(1, country.focusBounds.width)} ${Math.max(1, country.focusBounds.height)}`}
-                          className="h-[18px] w-[18px]"
-                          preserveAspectRatio="xMidYMid meet"
-                        >
-                          <path d={country.path} fill="currentColor" />
-                        </svg>
-                      ) : (
-                        <Globe2 className="h-4 w-4" />
-                      )}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-xs leading-5 text-slate-400">{country.officialName}</p>
-                </div>
-              </div>
-
-              <dl className="mt-4 grid gap-2 text-sm">
-                <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
-                  <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.capitalLabel}</dt>
-                    <dd className="text-slate-100">{country.capital}</dd>
+                    <p className="mt-2 text-xs leading-5 text-slate-400">{country.officialName}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
-                  <MapPinned className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.regionLabel}</dt>
-                    <dd className="text-slate-100">{country.region}{country.subregion ? ` · ${country.subregion}` : ''}</dd>
+                <dl className="mt-4 grid gap-2 text-sm">
+                  <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
+                    <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.capitalLabel}</dt>
+                      <dd className="text-slate-100">{country.capital}</dd>
+                    </div>
                   </div>
+
+                  <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
+                    <MapPinned className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.regionLabel}</dt>
+                      <dd className="text-slate-100">{country.region}{country.subregion ? ` · ${country.subregion}` : ''}</dd>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
+                    <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.populationLabel}</dt>
+                      <dd className="text-slate-100">{numberFormat.format(country.population)}</dd>
+                    </div>
+                  </div>
+                </dl>
+
+                <div className="mt-3 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
+                  <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-slate-400">
+                    <Languages className="h-3.5 w-3.5" />
+                    {copy.languagesLabel}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-100">
+                    {country.languages.length > 0 ? country.languages.join(', ') : '—'}
+                  </p>
                 </div>
 
-                <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
-                  <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{copy.populationLabel}</dt>
-                    <dd className="text-slate-100">{numberFormat.format(country.population)}</dd>
-                  </div>
+                <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-300/18 bg-emerald-300/8 px-3 py-2 text-sm font-medium text-emerald-100">
+                  <span>{copy.detailsCta ?? 'View details'}</span>
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
                 </div>
-              </dl>
-
-              <div className="mt-3 rounded-xl border border-white/8 bg-slate-950/35 px-3 py-2">
-                <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-slate-400">
-                  <Languages className="h-3.5 w-3.5" />
-                  {copy.languagesLabel}
-                </p>
-                <p className="mt-1 text-sm text-slate-100">
-                  {country.languages.length > 0 ? country.languages.join(', ') : '—'}
-                </p>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
         </div>
       )}

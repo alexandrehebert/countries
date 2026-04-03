@@ -141,6 +141,7 @@ export default async function CountriesPage({ params }: PageProps) {
               populationLabel: t('population_label'),
               languagesLabel: t('languages_label'),
               emptyState: t('empty_state'),
+              detailsCta: t('details_cta'),
             }}
           />
         </div>

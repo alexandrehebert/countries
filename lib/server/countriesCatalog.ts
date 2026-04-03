@@ -390,3 +390,10 @@ export async function getCountriesCatalog(locale: string): Promise<CatalogCountr
 
   return buildCountriesCatalog(locale);
 }
+
+export async function getCountryDetails(locale: string, code: string): Promise<CatalogCountry | null> {
+  const normalizedCode = code.trim().toUpperCase();
+  const countries = await getCountriesCatalog(locale);
+
+  return countries.find((country) => country.code === normalizedCode || country.cca3 === normalizedCode) || null;
+}
