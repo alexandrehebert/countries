@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Globe2, Languages, MapPinned } from 'lucide-react';
+import { ArrowLeft, Building2, Globe2, Languages, MapPinned, Ruler } from 'lucide-react';
 import CountryFlag from '~/components/CountryFlag';
 import { CATALOG_VIEWBOX, type CatalogCountry } from '~/lib/server/countriesCatalog';
 
@@ -16,6 +16,7 @@ interface CountryDetailsViewProps {
     regionLabel: string;
     subregionLabel?: string;
     populationLabel: string;
+    areaLabel: string;
     languagesLabel: string;
     currenciesLabel: string;
     continentsLabel: string;
@@ -125,6 +126,7 @@ export default function CountryDetailsView({
   const numberFormat = new Intl.NumberFormat(locale);
   const continents = Array.from(new Set(country.continents.map((continent) => continent.trim()).filter(Boolean)));
   const continentsValue = continents.join(', ') || '—';
+  const areaValue = country.area > 0 ? `${numberFormat.format(Math.round(country.area))} km²` : '—';
   const hasDuplicateRegionAndContinent = continents.length === 1 && continents[0] === country.region;
   const geographyLabel = hasDuplicateRegionAndContinent && country.subregion
     ? (copy.subregionLabel || copy.regionLabel)
@@ -174,7 +176,7 @@ export default function CountryDetailsView({
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <InfoTile
               icon={<Building2 className="h-3.5 w-3.5 text-amber-300" />}
               label={copy.capitalLabel}
@@ -184,6 +186,11 @@ export default function CountryDetailsView({
               icon={<Globe2 className="h-3.5 w-3.5 text-emerald-300" />}
               label={copy.populationLabel}
               value={numberFormat.format(country.population)}
+            />
+            <InfoTile
+              icon={<Ruler className="h-3.5 w-3.5 text-violet-300" />}
+              label={copy.areaLabel}
+              value={areaValue}
             />
             <InfoTile
               icon={<MapPinned className="h-3.5 w-3.5 text-cyan-300" />}

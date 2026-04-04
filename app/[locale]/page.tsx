@@ -139,10 +139,22 @@ export default async function CountriesPage({ params }: PageProps) {
               capitalLabel: t('capital_label'),
               regionLabel: t('region_label'),
               populationLabel: t('population_label'),
+              areaLabel: t('area_label'),
               languagesLabel: t('languages_label'),
+              continentsLabel: t('continents_label'),
+              currenciesLabel: t('currencies_label'),
               emptyState: t('empty_state'),
               detailsCta: t('details_cta'),
               loadingDetails: t.raw('loading_details') as string,
+              compareAction: t('compare_action'),
+              comparingAction: t('comparing_action'),
+              compareTitle: t('compare_title'),
+              compareHint: t('compare_hint'),
+              compareEmpty: t('compare_empty'),
+              compareClear: t('compare_clear'),
+              compareLimit: t.raw('compare_limit') as string,
+              compareEnable: t('compare_enable'),
+              compareDisable: t('compare_disable'),
             }}
           />
         </div>

@@ -32,6 +32,7 @@ export default async function CountryDetailsModalPage({ params }: CountryDetails
           regionLabel: t('region_label'),
           subregionLabel: t('subregion_label'),
           populationLabel: t('population_label'),
+          areaLabel: t('area_label'),
           languagesLabel: t('languages_label'),
           currenciesLabel: t('currencies_label'),
           continentsLabel: t('continents_label'),

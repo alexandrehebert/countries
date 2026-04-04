@@ -22,13 +22,16 @@ describe('getCountriesCatalog', () => {
     expect(codes.has('ZA')).toBe(true);
   });
 
-  it('provides population figures for representative countries', async () => {
+  it('provides population and area figures for representative countries', async () => {
     const countries = await getCountriesCatalog('en');
     const byCode = new Map(countries.map((country) => [country.code, country]));
 
     expect(byCode.get('FR')?.population).toBeGreaterThan(0);
     expect(byCode.get('US')?.population).toBeGreaterThan(0);
     expect(byCode.get('JP')?.population).toBeGreaterThan(0);
+    expect(byCode.get('FR')?.area).toBeGreaterThan(0);
+    expect(byCode.get('US')?.area).toBeGreaterThan(0);
+    expect(byCode.get('JP')?.area).toBeGreaterThan(0);
   });
 
   it('derives continent values when the source dataset does not expose them', async () => {

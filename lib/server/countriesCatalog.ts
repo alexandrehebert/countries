@@ -23,6 +23,7 @@ export interface CatalogCountry {
   subregion: string;
   continents: string[];
   population: number;
+  area: number;
   languages: string[];
   currencies: string[];
   flagEmoji: string;
@@ -396,6 +397,14 @@ function getPopulation(country: Country): number {
     : 0;
 }
 
+function getArea(country: Country): number {
+  const areaCandidate = (country as Country & { area?: number }).area;
+
+  return typeof areaCandidate === 'number' && Number.isFinite(areaCandidate)
+    ? areaCandidate
+    : 0;
+}
+
 function toCatalogCountry(
   country: Country,
   locale: string,
@@ -407,6 +416,7 @@ function toCatalogCountry(
   }
 
   const population = getPopulation(country);
+  const area = getArea(country);
   const continents = getContinents(country);
   const matchedFeature = resolveFeature(country, lookup);
   const rawFeature = matchedFeature ? normalizeAntimeridianGeometry(matchedFeature, generator) : null;
@@ -444,6 +454,7 @@ function toCatalogCountry(
     subregion: country.subregion || '',
     continents,
     population,
+    area,
     languages: getLanguages(country),
     currencies: getCurrencies(country),
     flagEmoji: country.flag,
