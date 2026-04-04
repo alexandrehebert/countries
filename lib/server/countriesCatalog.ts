@@ -165,14 +165,17 @@ function getFeatureFocusGeometry(
     return feature;
   }
 
-  let totalArea = 0;
-  let largestPolygonSummary: {
+  type PolygonSummary = {
     polygon: GeoJSON.Position[][];
     area: number;
     bounds: [[number, number], [number, number]];
-  } | null = null;
+  };
 
-  const polygonSummaries = polygons.map((polygon) => {
+  let totalArea = 0;
+  let largestPolygonSummary: PolygonSummary | null = null;
+  const polygonSummaries: PolygonSummary[] = [];
+
+  for (const polygon of polygons) {
     const polygonFeature: GeoFeature = {
       type: 'Feature',
       properties: feature.properties,
@@ -182,14 +185,14 @@ function getFeatureFocusGeometry(
     const bounds = generator.bounds(polygonFeature);
     totalArea += area;
 
-    const summary = { polygon, area, bounds };
+    const summary: PolygonSummary = { polygon, area, bounds };
 
     if (!largestPolygonSummary || area > largestPolygonSummary.area) {
       largestPolygonSummary = summary;
     }
 
-    return summary;
-  });
+    polygonSummaries.push(summary);
+  }
 
   if (!largestPolygonSummary || totalArea <= 0) {
     return feature;
