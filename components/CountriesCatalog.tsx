@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { Building2, Globe2, Languages, MapPinned, Search } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Building2, Globe, Globe2, Languages, MapPinned, Search } from 'lucide-react';
 import CountryFlag from '~/components/CountryFlag';
 import type { CatalogCountry } from '~/lib/server/countriesCatalog';
 
@@ -20,6 +21,7 @@ interface CountriesCatalogProps {
     languagesLabel: string;
     emptyState: string;
     detailsCta?: string;
+    loadingDetails: string;
   };
 }
 
@@ -32,8 +34,29 @@ function normalizeSearch(value: string): string {
 }
 
 export default function CountriesCatalog({ countries, locale, copy }: CountriesCatalogProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const navigationTimeoutRef = useRef<number | null>(null);
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState('all');
+  const [pendingCountry, setPendingCountry] = useState<{ code: string; name: string } | null>(null);
+
+  useEffect(() => {
+    setPendingCountry(null);
+
+    if (navigationTimeoutRef.current !== null) {
+      window.clearTimeout(navigationTimeoutRef.current);
+      navigationTimeoutRef.current = null;
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current !== null) {
+        window.clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const regions = useMemo(() => {
     return Array.from(new Set(countries.map((country) => country.region).filter(Boolean))).sort((left, right) => (
@@ -112,13 +135,41 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
         </div>
       ) : (
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredCountries.map((country) => (
+          {filteredCountries.map((country) => {
+            const href = `/${locale}/country/${country.code.toLowerCase()}`;
+
+            return (
             <Link
               key={country.code}
-              href={`/${locale}/country/${country.code.toLowerCase()}`}
+              href={href}
               scroll={false}
               aria-label={copy.detailsCta ? `${copy.detailsCta}: ${country.name}` : country.name}
-              className="group block min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
+              onClick={(event) => {
+                if (
+                  event.button !== 0
+                  || event.metaKey
+                  || event.ctrlKey
+                  || event.shiftKey
+                  || event.altKey
+                  || event.defaultPrevented
+                ) {
+                  return;
+                }
+
+                event.preventDefault();
+
+                if (navigationTimeoutRef.current !== null) {
+                  window.clearTimeout(navigationTimeoutRef.current);
+                }
+
+                setPendingCountry({ code: country.code, name: country.name });
+                navigationTimeoutRef.current = window.setTimeout(() => {
+                  router.push(href, { scroll: false });
+                  navigationTimeoutRef.current = null;
+                }, 500);
+              }}
+              aria-busy={pendingCountry?.code === country.code}
+              className="group relative block min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_14px_45px_rgba(2,6,23,0.28)] transition hover:border-emerald-300/35 hover:bg-emerald-300/6"
             >
               <article className="flex h-full min-w-0 flex-col">
                 <div className="flex items-start gap-3">
@@ -195,13 +246,30 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
                   </p>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-300/18 bg-emerald-300/8 px-3 py-2 text-sm font-medium text-emerald-100">
-                  <span>{copy.detailsCta ?? 'View details'}</span>
-                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
-                </div>
               </article>
+
+              {pendingCountry?.code !== country.code ? (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center rounded-2xl bg-slate-950/0 opacity-0 transition-all duration-200 group-hover:bg-slate-950/58 group-hover:opacity-100 group-focus-visible:bg-slate-950/58 group-focus-visible:opacity-100"
+                >
+                  <Globe className="h-12 w-12 text-emerald-300 drop-shadow-[0_0_18px_rgba(110,231,183,0.35)]" />
+                </div>
+              ) : null}
+
+              {pendingCountry?.code === country.code ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  aria-label={copy.loadingDetails.replace('{country}', country.name)}
+                  className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-950/68 backdrop-blur-[2px]"
+                >
+                  <Globe className="h-12 w-12 animate-spin text-emerald-300" />
+                  <span className="sr-only">{copy.loadingDetails.replace('{country}', country.name)}</span>
+                </div>
+              ) : null}
             </Link>
-          ))}
+          );})}
         </div>
       )}
     </>

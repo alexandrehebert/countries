@@ -142,6 +142,7 @@ export default async function CountriesPage({ params }: PageProps) {
               languagesLabel: t('languages_label'),
               emptyState: t('empty_state'),
               detailsCta: t('details_cta'),
+              loadingDetails: t.raw('loading_details') as string,
             }}
           />
         </div>

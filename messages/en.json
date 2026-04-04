@@ -20,6 +20,7 @@
     "code_label": "Codes",
     "empty_state": "No countries match the current filters.",
     "details_cta": "Open details",
+    "loading_details": "Loading details for {country}",
     "back_to_catalog": "Back to catalog",
     "close_details": "Close details",
     "stats_total_label": "Catalog entries",
