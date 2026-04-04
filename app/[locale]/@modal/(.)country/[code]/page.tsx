@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import CountryDetailsModal from '~/components/CountryDetailsModal';
 import CountryDetailsView from '~/components/CountryDetailsView';
-import { getCountryDetails } from '~/lib/server/countriesCatalog';
+import { getCatalogMapBackdrop, getCountryDetails } from '~/lib/server/countriesCatalog';
 
 interface CountryDetailsModalPageProps {
   params: Promise<{ locale: string; code: string }>;
@@ -10,9 +10,10 @@ interface CountryDetailsModalPageProps {
 
 export default async function CountryDetailsModalPage({ params }: CountryDetailsModalPageProps) {
   const { locale, code } = await params;
-  const [t, country] = await Promise.all([
+  const [t, country, worldMapPath] = await Promise.all([
     getTranslations({ locale, namespace: 'catalog' }),
     getCountryDetails(locale, code),
+    getCatalogMapBackdrop(),
   ]);
 
   if (!country) {
@@ -24,6 +25,7 @@ export default async function CountryDetailsModalPage({ params }: CountryDetails
       <CountryDetailsView
         country={country}
         locale={locale}
+        worldMapPath={worldMapPath}
         copy={{
           officialLabel: t('official_label'),
           capitalLabel: t('capital_label'),

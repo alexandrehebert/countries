@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Coins, Globe2, Languages, MapPinned } from 'lucide-react';
+import { ArrowLeft, Building2, Globe2, Languages, MapPinned } from 'lucide-react';
 import CountryFlag from '~/components/CountryFlag';
-import type { CatalogCountry } from '~/lib/server/countriesCatalog';
+import { CATALOG_VIEWBOX, type CatalogCountry } from '~/lib/server/countriesCatalog';
 
 interface CountryDetailsViewProps {
   country: CatalogCountry;
   locale: string;
   backHref?: string;
+  worldMapPath?: string;
   copy: {
     backToCatalog?: string;
     officialLabel: string;
@@ -66,10 +67,49 @@ function TagSection({
   );
 }
 
+function getMapViewBox(focusBounds: CatalogCountry['focusBounds']): string {
+  const inset = 24;
+  const mapBounds = {
+    x: inset,
+    y: inset,
+    width: CATALOG_VIEWBOX.width - inset * 2,
+    height: CATALOG_VIEWBOX.height - inset * 2,
+  };
+
+  if (!focusBounds) {
+    return `${mapBounds.x} ${mapBounds.y} ${mapBounds.width} ${mapBounds.height}`;
+  }
+
+  const aspectRatio = CATALOG_VIEWBOX.width / CATALOG_VIEWBOX.height;
+  const zoomedWidth = Math.max(focusBounds.width * 3.2, mapBounds.width * 0.28);
+  const zoomedHeight = Math.max(focusBounds.height * 3.2, mapBounds.height * 0.28);
+
+  let viewWidth = zoomedWidth;
+  let viewHeight = zoomedHeight;
+
+  if (viewWidth / viewHeight > aspectRatio) {
+    viewHeight = viewWidth / aspectRatio;
+  } else {
+    viewWidth = viewHeight * aspectRatio;
+  }
+
+  viewWidth = Math.min(mapBounds.width, viewWidth);
+  viewHeight = Math.min(mapBounds.height, viewHeight);
+
+  let x = focusBounds.x + (focusBounds.width - viewWidth) / 2;
+  let y = focusBounds.y + (focusBounds.height - viewHeight) / 2;
+
+  x = Math.max(mapBounds.x, Math.min(mapBounds.x + mapBounds.width - viewWidth, x));
+  y = Math.max(mapBounds.y, Math.min(mapBounds.y + mapBounds.height - viewHeight, y));
+
+  return `${x} ${y} ${viewWidth} ${viewHeight}`;
+}
+
 export default function CountryDetailsView({
   country,
   locale,
   backHref,
+  worldMapPath,
   copy,
 }: CountryDetailsViewProps) {
   const numberFormat = new Intl.NumberFormat(locale);
@@ -82,6 +122,7 @@ export default function CountryDetailsView({
   const geographyValue = hasDuplicateRegionAndContinent && country.subregion
     ? country.subregion
     : (country.region || '—');
+  const mapViewBox = getMapViewBox(country.focusBounds);
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-7">
@@ -150,8 +191,43 @@ export default function CountryDetailsView({
         <section className="space-y-3">
           <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 shadow-[0_18px_60px_rgba(2,6,23,0.35)] sm:p-5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">{country.name}</p>
-            <div className="mt-3 rounded-2xl border border-white/8 bg-slate-950/45 p-3">
-              {country.path && country.focusBounds ? (
+            <div className="mt-3 overflow-hidden rounded-2xl border border-white/8 bg-slate-950/45">
+              {country.path && worldMapPath ? (
+                <div className="relative">
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-2xl"
+                    style={{
+                      backgroundImage: [
+                        'radial-gradient(circle at 18% 24%, rgba(110, 231, 183, 0.08), transparent 24%)',
+                        'radial-gradient(circle at 80% 18%, rgba(56, 189, 248, 0.08), transparent 22%)',
+                        'linear-gradient(180deg, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0.02))',
+                      ].join(','),
+                    }}
+                  />
+                  <svg
+                    aria-hidden="true"
+                    viewBox={mapViewBox}
+                    className="relative block h-48 w-full"
+                    preserveAspectRatio="xMidYMid slice"
+                  >
+                    <path
+                      d={worldMapPath}
+                      fill="rgba(148, 163, 184, 0.10)"
+                      stroke="rgba(148, 163, 184, 0.22)"
+                      strokeWidth="1"
+                    />
+                    <path
+                      d={country.path}
+                      fill="rgba(110, 231, 183, 0.90)"
+                      stroke="rgba(236, 253, 245, 0.98)"
+                      strokeWidth="1.2"
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              ) : country.path && country.focusBounds ? (
                 <svg
                   aria-hidden="true"
                   viewBox={`${country.focusBounds.x} ${country.focusBounds.y} ${Math.max(1, country.focusBounds.width)} ${Math.max(1, country.focusBounds.height)}`}

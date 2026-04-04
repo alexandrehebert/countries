@@ -4,7 +4,7 @@ import { geoNaturalEarth1, geoPath } from 'd3-geo';
 import countries, { type Country } from 'world-countries';
 import populationByCode from '~/lib/data/countryPopulationByCode.json';
 
-const CATALOG_VIEWBOX = { width: 1000, height: 560 };
+export const CATALOG_VIEWBOX = { width: 1000, height: 560 };
 const MIN_SHAPE_SIZE = 4;
 
 type GeoFeature = GeoJSON.Feature<GeoJSON.Geometry>;
@@ -29,6 +29,7 @@ export interface CatalogCountry {
 }
 
 let cachedEnglishCatalogPromise: Promise<CatalogCountry[]> | null = null;
+let cachedBackdropPromise: Promise<string> | null = null;
 
 function normalizeText(value: string): string {
   return value
@@ -429,6 +430,29 @@ export async function getCountriesCatalog(locale: string): Promise<CatalogCountr
   }
 
   return buildCountriesCatalog(locale);
+}
+
+export async function getCatalogMapBackdrop(): Promise<string> {
+  if (!cachedBackdropPromise) {
+    cachedBackdropPromise = (async () => {
+      const geoData = await loadGeoJson();
+      const projection = geoNaturalEarth1();
+
+      projection.fitExtent(
+        [[24, 24], [CATALOG_VIEWBOX.width - 24, CATALOG_VIEWBOX.height - 24]],
+        geoData as never,
+      );
+
+      const generator = geoPath(projection);
+
+      return ((geoData.features || []) as GeoFeature[])
+        .map((feature) => generator(normalizeAntimeridianGeometry(feature, generator)) || '')
+        .filter(Boolean)
+        .join(' ');
+    })();
+  }
+
+  return cachedBackdropPromise;
 }
 
 export async function getCountryDetails(locale: string, code: string): Promise<CatalogCountry | null> {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import CountryDetailsView from '~/components/CountryDetailsView';
-import { getCountryDetails } from '~/lib/server/countriesCatalog';
+import { getCatalogMapBackdrop, getCountryDetails } from '~/lib/server/countriesCatalog';
 
 interface CountryDetailsPageProps {
   params: Promise<{ locale: string; code: string }>;
@@ -27,9 +27,10 @@ export async function generateMetadata({ params }: CountryDetailsPageProps): Pro
 
 export default async function CountryDetailsPage({ params }: CountryDetailsPageProps) {
   const { locale, code } = await params;
-  const [t, country] = await Promise.all([
+  const [t, country, worldMapPath] = await Promise.all([
     getTranslations({ locale, namespace: 'catalog' }),
     getCountryDetails(locale, code),
+    getCatalogMapBackdrop(),
   ]);
 
   if (!country) {
@@ -56,6 +57,7 @@ export default async function CountryDetailsPage({ params }: CountryDetailsPageP
             country={country}
             locale={locale}
             backHref={`/${locale}`}
+            worldMapPath={worldMapPath}
             copy={{
               backToCatalog: t('back_to_catalog'),
               officialLabel: t('official_label'),
