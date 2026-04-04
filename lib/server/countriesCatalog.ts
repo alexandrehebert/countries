@@ -6,6 +6,8 @@ import populationByCode from '~/lib/data/countryPopulationByCode.json';
 
 export const CATALOG_VIEWBOX = { width: 1000, height: 560 };
 const MIN_SHAPE_SIZE = 4;
+const MIN_SIGNIFICANT_POLYGON_SHARE = 0.25;
+const MIN_SIGNIFICANT_POLYGON_RATIO = 0.35;
 
 type GeoFeature = GeoJSON.Feature<GeoJSON.Geometry>;
 type FeatureProperties = Record<string, unknown>;
@@ -164,53 +166,76 @@ function getFeatureFocusGeometry(
   }
 
   let totalArea = 0;
-  let largestArea = -1;
-  let largestPolygon: GeoJSON.Position[][] | null = null;
-  let largestBounds: [[number, number], [number, number]] | null = null;
+  let largestPolygonSummary: {
+    polygon: GeoJSON.Position[][];
+    area: number;
+    bounds: [[number, number], [number, number]];
+  } | null = null;
 
-  for (const polygon of polygons) {
+  const polygonSummaries = polygons.map((polygon) => {
     const polygonFeature: GeoFeature = {
       type: 'Feature',
       properties: feature.properties,
       geometry: { type: 'Polygon', coordinates: polygon },
     };
     const area = Math.max(0, generator.area(polygonFeature));
+    const bounds = generator.bounds(polygonFeature);
     totalArea += area;
 
-    if (area > largestArea) {
-      largestArea = area;
-      largestPolygon = polygon;
-      largestBounds = generator.bounds(polygonFeature);
-    }
-  }
+    const summary = { polygon, area, bounds };
 
-  if (!largestPolygon || !largestBounds || totalArea <= 0) {
+    if (!largestPolygonSummary || area > largestPolygonSummary.area) {
+      largestPolygonSummary = summary;
+    }
+
+    return summary;
+  });
+
+  if (!largestPolygonSummary || totalArea <= 0) {
     return feature;
   }
 
   const fullBounds = generator.bounds(feature);
   const fullWidth = Math.max(0, fullBounds[1][0] - fullBounds[0][0]);
   const fullHeight = Math.max(0, fullBounds[1][1] - fullBounds[0][1]);
-  const largestWidth = Math.max(0, largestBounds[1][0] - largestBounds[0][0]);
-  const largestHeight = Math.max(0, largestBounds[1][1] - largestBounds[0][1]);
+  const largestWidth = Math.max(0, largestPolygonSummary.bounds[1][0] - largestPolygonSummary.bounds[0][0]);
+  const largestHeight = Math.max(0, largestPolygonSummary.bounds[1][1] - largestPolygonSummary.bounds[0][1]);
   const fullMaxDimension = Math.max(fullWidth, fullHeight);
   const largestMaxDimension = Math.max(largestWidth, largestHeight);
   const isMuchMoreSpreadThanLargest = largestMaxDimension > 0 && fullMaxDimension / largestMaxDimension > 2.5;
 
-  const leftOffset = Math.max(0, largestBounds[0][0] - fullBounds[0][0]);
-  const rightOffset = Math.max(0, fullBounds[1][0] - largestBounds[1][0]);
+  const leftOffset = Math.max(0, largestPolygonSummary.bounds[0][0] - fullBounds[0][0]);
+  const rightOffset = Math.max(0, fullBounds[1][0] - largestPolygonSummary.bounds[1][0]);
   const maxHorizontalOffset = Math.max(leftOffset, rightOffset);
   const hasDateLineOutlier = fullMaxDimension > 0 && maxHorizontalOffset / fullMaxDimension > 0.18;
-  const largestAreaShare = largestArea / totalArea;
+  const largestAreaShare = largestPolygonSummary.area / totalArea;
 
   if ((!isMuchMoreSpreadThanLargest && !hasDateLineOutlier) || largestAreaShare < 0.55) {
     return feature;
   }
 
+  const significantPolygons = polygonSummaries.filter(({ area }) => {
+    const totalShare = area / totalArea;
+    const largestRatio = area / largestPolygonSummary.area;
+
+    return totalShare >= MIN_SIGNIFICANT_POLYGON_SHARE || largestRatio >= MIN_SIGNIFICANT_POLYGON_RATIO;
+  });
+
+  if (significantPolygons.length > 1) {
+    return {
+      type: 'Feature',
+      properties: feature.properties,
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: significantPolygons.map(({ polygon }) => polygon),
+      },
+    };
+  }
+
   return {
     type: 'Feature',
     properties: feature.properties,
-    geometry: { type: 'Polygon', coordinates: largestPolygon },
+    geometry: { type: 'Polygon', coordinates: largestPolygonSummary.polygon },
   };
 }
 

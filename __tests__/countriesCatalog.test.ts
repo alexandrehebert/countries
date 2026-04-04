@@ -49,4 +49,14 @@ describe('getCountriesCatalog', () => {
     expect(france?.path?.match(/M/g)).toHaveLength(1);
     expect(france?.focusBounds?.width).toBeGreaterThan(20);
   });
+
+  it('keeps both major landmasses for Malaysia', async () => {
+    const countries = await getCountriesCatalog('en');
+    const malaysia = countries.find((country) => country.code === 'MY');
+
+    expect(malaysia?.path).toBeTruthy();
+    expect(malaysia?.focusBounds).toBeTruthy();
+    expect((malaysia?.path?.match(/M/g) || []).length).toBeGreaterThan(1);
+    expect(malaysia?.focusBounds?.width).toBeGreaterThan(40);
+  });
 });
