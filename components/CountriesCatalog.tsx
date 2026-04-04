@@ -224,7 +224,7 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
             {compareEnabled ? copy.compareDisable : copy.compareEnable}
           </button>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+          <p className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-slate-300 sm:block">
             {copy.countriesShown.replace('{count}', String(filteredCountries.length))}
           </p>
         </div>
@@ -334,6 +334,12 @@ export default function CountriesCatalog({ countries, locale, copy }: CountriesC
           ) : null}
         </section>
       ) : null}
+
+      <div className="mt-5 border-t border-white/8 pt-4 sm:hidden">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+          {copy.countriesShown.replace('{count}', String(filteredCountries.length))}
+        </p>
+      </div>
 
       {filteredCountries.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-white/12 bg-white/4 px-4 py-10 text-center text-sm text-slate-300">
