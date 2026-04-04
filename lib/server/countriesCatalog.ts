@@ -26,6 +26,7 @@ export interface CatalogCountry {
   flagEmoji: string;
   path: string | null;
   focusBounds: { x: number; y: number; width: number; height: number } | null;
+  mapCenter: { x: number; y: number } | null;
 }
 
 let cachedEnglishCatalogPromise: Promise<CatalogCountry[]> | null = null;
@@ -321,6 +322,37 @@ function getContinents(country: Country): string[] {
   return region ? [region] : [];
 }
 
+function getMapCenter(
+  country: Country,
+  feature: GeoFeature | null,
+  generator: ReturnType<typeof geoPath>,
+): CatalogCountry['mapCenter'] {
+  if (feature) {
+    const [x, y] = generator.centroid(feature);
+
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      return { x, y };
+    }
+  }
+
+  const latlng = Array.isArray(country.latlng) ? country.latlng : [];
+  const projection = generator.projection();
+
+  if (typeof projection === 'function' && latlng.length >= 2) {
+    const [latitude, longitude] = latlng;
+    const projectedPoint = projection([longitude, latitude]);
+
+    if (projectedPoint && Number.isFinite(projectedPoint[0]) && Number.isFinite(projectedPoint[1])) {
+      return {
+        x: projectedPoint[0],
+        y: projectedPoint[1],
+      };
+    }
+  }
+
+  return null;
+}
+
 function getPopulation(country: Country): number {
   const populationCandidate = (country as Country & { population?: number }).population;
 
@@ -349,11 +381,12 @@ function toCatalogCountry(
   const population = getPopulation(country);
   const continents = getContinents(country);
   const matchedFeature = resolveFeature(country, lookup);
+  const rawFeature = matchedFeature ? normalizeAntimeridianGeometry(matchedFeature, generator) : null;
+  const mapCenter = getMapCenter(country, rawFeature, generator);
   let path: string | null = null;
   let focusBounds: CatalogCountry['focusBounds'] = null;
 
-  if (matchedFeature) {
-    const rawFeature = normalizeAntimeridianGeometry(matchedFeature, generator);
+  if (rawFeature) {
     const renderFeature = getFeatureFocusGeometry(rawFeature, generator);
     path = generator(renderFeature);
 
@@ -388,6 +421,7 @@ function toCatalogCountry(
     flagEmoji: country.flag,
     path,
     focusBounds,
+    mapCenter,
   };
 }
 

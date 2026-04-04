@@ -46,6 +46,7 @@ function buildCountry(overrides: Partial<CatalogCountry>): CatalogCountry {
     flagEmoji: '🇫🇷',
     path: null,
     focusBounds: null,
+    mapCenter: null,
     ...overrides,
   };
 }
@@ -89,5 +90,27 @@ describe('CountryDetailsView', () => {
     expect(screen.getByText('Region')).toBeInTheDocument();
     expect(screen.getByText('Americas')).toBeInTheDocument();
     expect(screen.getByText('North America')).toBeInTheDocument();
+  });
+
+  it('shows a location preview even when no country shape icon is available', () => {
+    render(
+      <CountryDetailsView
+        country={buildCountry({
+          code: 'AD',
+          cca3: 'AND',
+          name: 'Andorra',
+          officialName: 'Principality of Andorra',
+          capital: 'Andorra la Vella',
+          path: null,
+          focusBounds: null,
+          mapCenter: { x: 495, y: 146 },
+        } as Partial<CatalogCountry>)}
+        locale="en"
+        worldMapPath="M24 24H976V536H24Z"
+        copy={defaultCopy}
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: /andorra location map/i })).toBeInTheDocument();
   });
 });

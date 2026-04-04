@@ -43,6 +43,7 @@ const countries: CatalogCountry[] = [
     flagEmoji: '🇫🇷',
     path: null,
     focusBounds: null,
+    mapCenter: null,
   },
 ];
 

@@ -67,7 +67,10 @@ function TagSection({
   );
 }
 
-function getMapViewBox(focusBounds: CatalogCountry['focusBounds']): string {
+function getMapViewBox(
+  focusBounds: CatalogCountry['focusBounds'],
+  mapCenter: CatalogCountry['mapCenter'],
+): string {
   const inset = 24;
   const mapBounds = {
     x: inset,
@@ -75,14 +78,18 @@ function getMapViewBox(focusBounds: CatalogCountry['focusBounds']): string {
     width: CATALOG_VIEWBOX.width - inset * 2,
     height: CATALOG_VIEWBOX.height - inset * 2,
   };
+  const aspectRatio = CATALOG_VIEWBOX.width / CATALOG_VIEWBOX.height;
 
-  if (!focusBounds) {
+  if (!focusBounds && !mapCenter) {
     return `${mapBounds.x} ${mapBounds.y} ${mapBounds.width} ${mapBounds.height}`;
   }
 
-  const aspectRatio = CATALOG_VIEWBOX.width / CATALOG_VIEWBOX.height;
-  const zoomedWidth = Math.max(focusBounds.width * 3.2, mapBounds.width * 0.28);
-  const zoomedHeight = Math.max(focusBounds.height * 3.2, mapBounds.height * 0.28);
+  const zoomedWidth = focusBounds
+    ? Math.max(focusBounds.width * 3.2, mapBounds.width * 0.28)
+    : mapBounds.width * 0.42;
+  const zoomedHeight = focusBounds
+    ? Math.max(focusBounds.height * 3.2, mapBounds.height * 0.28)
+    : mapBounds.height * 0.42;
 
   let viewWidth = zoomedWidth;
   let viewHeight = zoomedHeight;
@@ -96,8 +103,11 @@ function getMapViewBox(focusBounds: CatalogCountry['focusBounds']): string {
   viewWidth = Math.min(mapBounds.width, viewWidth);
   viewHeight = Math.min(mapBounds.height, viewHeight);
 
-  let x = focusBounds.x + (focusBounds.width - viewWidth) / 2;
-  let y = focusBounds.y + (focusBounds.height - viewHeight) / 2;
+  const centerX = mapCenter?.x ?? ((focusBounds?.x || 0) + (focusBounds?.width || 0) / 2);
+  const centerY = mapCenter?.y ?? ((focusBounds?.y || 0) + (focusBounds?.height || 0) / 2);
+
+  let x = centerX - viewWidth / 2;
+  let y = centerY - viewHeight / 2;
 
   x = Math.max(mapBounds.x, Math.min(mapBounds.x + mapBounds.width - viewWidth, x));
   y = Math.max(mapBounds.y, Math.min(mapBounds.y + mapBounds.height - viewHeight, y));
@@ -122,7 +132,7 @@ export default function CountryDetailsView({
   const geographyValue = hasDuplicateRegionAndContinent && country.subregion
     ? country.subregion
     : (country.region || '—');
-  const mapViewBox = getMapViewBox(country.focusBounds);
+  const mapViewBox = getMapViewBox(country.focusBounds, country.mapCenter);
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-7">
@@ -192,7 +202,7 @@ export default function CountryDetailsView({
           <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 shadow-[0_18px_60px_rgba(2,6,23,0.35)] sm:p-5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">{country.name}</p>
             <div className="mt-3 overflow-hidden rounded-2xl border border-white/8 bg-slate-950/45">
-              {country.path && worldMapPath ? (
+              {worldMapPath && (country.path || country.mapCenter) ? (
                 <div className="relative">
                   <div
                     aria-hidden="true"
@@ -206,7 +216,8 @@ export default function CountryDetailsView({
                     }}
                   />
                   <svg
-                    aria-hidden="true"
+                    role="img"
+                    aria-label={`${country.name} location map`}
                     viewBox={mapViewBox}
                     className="relative block h-48 w-full"
                     preserveAspectRatio="xMidYMid slice"
@@ -217,14 +228,34 @@ export default function CountryDetailsView({
                       stroke="rgba(148, 163, 184, 0.22)"
                       strokeWidth="1"
                     />
-                    <path
-                      d={country.path}
-                      fill="rgba(110, 231, 183, 0.90)"
-                      stroke="rgba(236, 253, 245, 0.98)"
-                      strokeWidth="1.2"
-                      vectorEffect="non-scaling-stroke"
-                      strokeLinejoin="round"
-                    />
+                    {country.path ? (
+                      <path
+                        d={country.path}
+                        fill="rgba(110, 231, 183, 0.90)"
+                        stroke="rgba(236, 253, 245, 0.98)"
+                        strokeWidth="1.2"
+                        vectorEffect="non-scaling-stroke"
+                        strokeLinejoin="round"
+                      />
+                    ) : null}
+                    {!country.path && country.mapCenter ? (
+                      <>
+                        <circle
+                          cx={country.mapCenter.x}
+                          cy={country.mapCenter.y}
+                          r="14"
+                          fill="rgba(110, 231, 183, 0.20)"
+                        />
+                        <circle
+                          cx={country.mapCenter.x}
+                          cy={country.mapCenter.y}
+                          r="4.5"
+                          fill="rgba(236, 253, 245, 1)"
+                          stroke="rgba(16, 185, 129, 0.95)"
+                          strokeWidth="2"
+                        />
+                      </>
+                    ) : null}
                   </svg>
                 </div>
               ) : country.path && country.focusBounds ? (
